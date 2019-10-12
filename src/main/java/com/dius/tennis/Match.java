@@ -19,6 +19,9 @@ public class Match {
 	private boolean isDeuced = false;
 	private boolean isDeuceBreaker = false;
 	private boolean tieBreakStarted = false;
+	private String advantagePlayer = null;
+	private String winGamePlayer = null;
+	private String winSetPlayer = null;
 	//Holds player's set scores
 	private Map<String, Integer> playersSet = null;
 	//Holds player's game scores
@@ -32,10 +35,23 @@ public class Match {
 	public Match(String playerOne, String playerTwo) {
 		setScore(playerOne, 0);
 		setScore(playerTwo, 0);
+		setPoint(playerOne, 0);
+		setPoint(playerTwo, 0);
+	}
+	
+	private void init() {
+		gameStarted = true;
+		advantagePlayer = null;
+		isDeuceBreaker = false;
+		isDeuced = false;
 	}
 	
 	private void setScore(String player, int score) {
 		getPlayers().put(player, score);
+	}
+	
+	private void setPoint(String player, int score) {
+		getPlayersSet().put(player, score);
 	}
 	
 	public Map<String, Integer> getPlayers() {
@@ -52,46 +68,71 @@ public class Match {
 		return this.playersSet;
 	}
 	
+	private int getScore(String player) {
+		return ((Integer)getPlayers().get(player)).intValue();
+	}
+	
 	public String score() {
 		String playerOne = (String)getPlayers().keySet().toArray()[1];
 		String playerTwo = (String)getPlayers().keySet().toArray()[0];
 		String initScore = "0-0";
 		if (!gameStarted)
 			return initScore;
-		else if (!isDeuced && !isDeuceBreaker) {
+		else if (!isDeuced && !isDeuceBreaker && winGamePlayer==null) {
 			return String.format("%s, %d-%d",initScore,
 					players.get(playerOne),players.get(playerTwo));
 		} else  if (isDeuced && !isDeuceBreaker){
 			return String.format("%s, %s",initScore,
 					"Deuce");
+		} else if (winGamePlayer==null){
+			return String.format("%s, Advantage %s",initScore,
+					advantagePlayer); // advantage
 		} else {
-			return ""; // advantage
+			return String.format("%s, Set %s",initScore,
+					winGamePlayer); // winner set
 		}
 	}
 	
-	private int getScore(String player) {
-		return ((Integer)getPlayers().get(player)).intValue();
-	}
 	
-	private boolean isDeuced() {
+	private void validateScore() {
 		String playerOne = (String)getPlayers().keySet().toArray()[1];
 		String playerTwo = (String)getPlayers().keySet().toArray()[0];
 		int playerOneScore = getScore(playerOne);
 		int playerTwoScore = getScore(playerTwo);
 		
+		isDeuced = false;
+		
+		if (playerOneScore >= 40 && playerTwoScore>=40) {
+			if (playerOneScore - playerTwoScore >= 2)
+				winGamePlayer = playerOne;
+			else  if (playerTwoScore - playerOneScore >= 2)
+				winGamePlayer = playerTwo;
+		} else if (playerOneScore > 40 && playerTwoScore < 40) {
+			winGamePlayer = playerOne;
+		} else if (playerOneScore < 40 && playerTwoScore > 40) {
+			winGamePlayer = playerTwo;
+		}
+		
 		if (playerOneScore >= 40 && playerTwoScore>=40 && playerOneScore == playerTwoScore) {
 			// if deuce, reset score to 40 ALL
 			setScore(playerOne, 40);
 			setScore(playerTwo, 40);
-			return true;
-		}
-		return false;
+			isDeuced = true;
+		} else if (playerOneScore >= 40 && playerTwoScore>=40 && playerOneScore != playerTwoScore) {
+			if (playerOneScore>playerTwoScore)
+				advantagePlayer = playerOne;
+			else 
+				advantagePlayer = playerTwo;
+		} 
+		
+		
 	}
 	
 	public void pointWonBy(String player) {
-		if (!gameStarted)
-			gameStarted = true;
+		if (!gameStarted) 
+			init();
 		
+		gameStarted = true;
 		int points = getPlayers().get(player).intValue();
 		if (!isDeuced && !isDeuceBreaker) {
 			points = points==30?40:points+15;
@@ -100,7 +141,7 @@ public class Match {
 			points += 1; // just add a point (this is just telling player is an advantage)
 		}
 		players.put(player, points);
-		isDeuced = isDeuced();
+		validateScore();
 		
 	}
 	
