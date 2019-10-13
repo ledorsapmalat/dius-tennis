@@ -12,7 +12,7 @@ public class TestPlay {
 ```
 
 ## Main Class
-The main class is called `Match.java`. It is an a simulation of a Tennis Set Play. To score, one must implicitly tell a `pointsWonBy('Player')`. If a game has been won by a player, one must tell the game to be reset `gameReset()`. To view the Game Score and Status, one must call `score()`.
+The main class is called `Match.java`. It is a simulation of a Tennis Set Play. To score, one must implicitly tell a `pointsWonBy('Player')`. If a game has been won by a player, one must tell the game to be reset `gameReset()`. To view the Game Score and Status, one must call `score()`.
 
 ```
 Player playerOne = new Player();
