@@ -6,6 +6,7 @@ import java.util.List;
 /**
  * Match class to run a simple Tennis Match Simulation
  * The Object Structure is not perfect. It can be REFACTOR'ed more and better.
+ * The attributes are setup in a rush.
  * 
  * @author rodeltalampas
  *
@@ -34,6 +35,17 @@ public class Match {
 		playersSet = new Set(playerOne, playerTwo);
 	}
 	
+	/**
+	 * This resets the game and prepares for a new game
+	 */
+	public void gameSet() {
+		// reset game
+		gameStarted = false;
+	}
+
+	/**
+	 * Initialize Game variables and Game Scores
+	 */
 	private void inititializeGame() {
 		gameStarted = true;
 		advantagePlayer = null;
@@ -46,10 +58,20 @@ public class Match {
 		setScore(playerTwo, 0);
 	}
 	
+	/**
+	 * Set Player Score
+	 * @param player
+	 * @param score
+	 */
 	private void setScore(Player player, int score) {
 		player.setScore(score);
 	}
 	
+	/**
+	 * Set Player Point
+	 * @param player
+	 * @param score
+	 */
 	private void setPoint(Player player, int score) {
 		Player playerOne = ((Player)getPlayers().get(0));
 		if (player.equals(playerOne))
@@ -58,6 +80,10 @@ public class Match {
 			getPlayersSet().setPlayerTwoPoints(score);
 	}
 	
+	/**
+	 * Get a list of players
+	 * @return
+	 */
 	public List<Player> getPlayers() {
 		if (this.players == null) {
 			this.players = new ArrayList<Player>();
@@ -65,14 +91,27 @@ public class Match {
 		return this.players;
 	}
 	
+	/**
+	 * Return the Tennis Set
+	 */
 	public Set getPlayersSet() {
 		return this.playersSet;
 	}
 	
+	/**
+	 * Get Player Score
+	 * @param player
+	 * @return
+	 */
 	private int getScore(Player player) {
 		return player.getScore();
 	}
 	
+	/**
+	 * Get Player Points
+	 * @param player
+	 * @return
+	 */
 	private int getPoint(Player player) {
 		Player playerOne = ((Player)getPlayers().get(0));
 		if (player.equals(playerOne))
@@ -81,6 +120,10 @@ public class Match {
 			return getPlayersSet().getPlayerTwoPoints();
 	}
 	
+	/**
+	 * Returns the current Points, Score and Game Status
+	 * @return
+	 */
 	public String score() {
 		Player playerOne = ((Player)getPlayers().get(0));
 		Player playerTwo = ((Player)getPlayers().get(1));
@@ -96,13 +139,17 @@ public class Match {
 		} else if (winGamePlayer==null){
 			return String.format("%s, Advantage %s",initScore,
 					advantagePlayer.getName()); // advantage
+		} else if (playersSet.getWinner()!=null)  {
+			// there is a winner
+			return String.format("%s, Winner %s", initScore, playersSet.getWinner().getName());
 		} else {
-			return String.format("%s, Set %s",initScore,
-					winGamePlayer.getName()); // winner set
+			return String.format("%s",initScore); // winner set
 		}
 	}
 	
-	
+	/**
+	 * Validates the score
+	 */
 	private void validateScore() {
 		Player playerOne = ((Player)getPlayers().get(0));
 		Player playerTwo = ((Player)getPlayers().get(1));
@@ -115,28 +162,66 @@ public class Match {
 		isDeuced = false;
 		playersSet.setTieBreak(false);
 		
-		validateSetWin(playerOne, playerTwo, playerOneScore, playerTwoScore, playerOnePoint, playerTwoPoint );
+		validateGameWinner(playerOne, playerTwo, playerOneScore, playerTwoScore, playerOnePoint, playerTwoPoint );
 		validateDeuce(playerOne, playerTwo, playerOneScore, playerTwoScore); 
+		validateSetWinner(playerOne, playerTwo);
 
 	}
 
 	/**
 	 * @param playerOne
 	 * @param playerTwo
+	 */
+	private void validateSetWinner(Player playerOne, Player playerTwo) {
+		int playerOnePoint;
+		int playerTwoPoint;
+		// get current points
+		playerOnePoint = getPoint(playerOne);
+	 	playerTwoPoint = getPoint(playerTwo);
+	 	if (playerOnePoint==playerTwoPoint && playerOnePoint == 6) {
+	 		playersSet.setTieBreak(true);
+	 	}else if (playerOnePoint>=7 || playerTwoPoint>=7){
+	 		if (playerOnePoint-playerTwoPoint>=1)
+	 			playersSet.setWinner(playerOne);
+	 		else if (playerTwoPoint-playerOnePoint>=1)
+	 			playersSet.setWinner(playerTwo);
+	 	}
+	}
+
+	/**
+	 * Checks if a player has won a game
+	 * @param playerOne
+	 * @param playerTwo
 	 * @param playerOneScore
 	 * @param playerTwoScore
 	 */
-	private void validateSetWin(Player playerOne, Player playerTwo, int playerOneScore, int playerTwoScore,
+	private void validateGameWinner(Player playerOne, Player playerTwo, int playerOneScore, int playerTwoScore,
 			int playerOnePoint, int playerTwoPoint) {
-		if (playerOneScore >= 40 && playerTwoScore>=40) {
-			if (playerOneScore - playerTwoScore >= 2)
+		if (!playersSet.isTieBreakStarted()) {
+			if (playerOneScore >= 40 && playerTwoScore>=40) {
+				if (playerOneScore - playerTwoScore >= 2)
+					winGamePlayer = playerOne;
+				else  if (playerTwoScore - playerOneScore >= 2)
+					winGamePlayer = playerTwo;
+			} else if (playerOneScore > 40 && playerTwoScore < 40) {
 				winGamePlayer = playerOne;
-			else  if (playerTwoScore - playerOneScore >= 2)
+			} else if (playerOneScore < 40 && playerTwoScore > 40) {
 				winGamePlayer = playerTwo;
-		} else if (playerOneScore > 40 && playerTwoScore < 40) {
-			winGamePlayer = playerOne;
-		} else if (playerOneScore < 40 && playerTwoScore > 40) {
-			winGamePlayer = playerTwo;
+			}
+		} else {
+			if (playerOneScore==12 || playerTwoScore==12) {
+				if (playerOneScore>playerTwoScore) {
+					winGamePlayer = playerOne;
+				}else if (playerTwoScore>playerOneScore) {
+					winGamePlayer = playerTwo;
+				}
+			} else if (playerOneScore>=7 || playerTwoScore>=7) {
+				if (playerOneScore-playerTwoScore>=2) {
+					winGamePlayer = playerOne;
+				}else if (playerTwoScore-playerOneScore>=2) {
+					winGamePlayer = playerTwo;
+				}
+			}
 		}
 		
 		if (winGamePlayer!=null) {
@@ -146,19 +231,11 @@ public class Match {
 			else 
 				points=getPlayersSet().getPlayerTwoPoints();
 			setPoint(winGamePlayer,points+1);
-			
 		}
 	}
 	
 	/**
-	 * This resets the game and prepares for a new game
-	 */
-	public void gameSet() {
-		// reset game
-		gameStarted = false;
-	}
-
-	/**
+	 * Checks whether the game is a Deuce
 	 * @param playerOne
 	 * @param playerTwo
 	 * @param playerOneScore
@@ -180,25 +257,27 @@ public class Match {
 		}
 	}
 	
+	/**
+	 * Mark a Score for a Player
+	 * @param player
+	 */
 	public void pointWonBy(Player player) {
 		if (!gameStarted) 
 			inititializeGame();
 		
 		int score = getScore(player);
-		if (!isDeuced && !isDeuceBreaker) {
+		if (!isDeuced && !isDeuceBreaker && !playersSet.isTieBreak()) {
 			score = score==30?40:score+15;
-		} else if (!playersSet.isTieBreak() && !playersSet.isTieBreakStarted()){
+		} else if (!playersSet.isTieBreak()){
 			isDeuceBreaker = true;
 			score += 1; // just add a point (this is just telling player is an advantage)
+		} else {
+			playersSet.setTieBreakStarted(true); 
+			score += 1; // scoring is really by 1's for tie breaks
 		}
 		player.setScore(score);
 		validateScore();
 		
-	}
-	
-	public static void main(String[] args) {
-		
-
 	}
 
 }

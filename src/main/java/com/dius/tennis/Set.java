@@ -11,6 +11,7 @@ public class Set {
 	
 	Player playerOne;
 	Player playerTwo;
+	Player winner;
 	int playerOnePoints;
 	int playerTwoPoints;
 	boolean tieBreak;
@@ -93,6 +94,19 @@ public class Set {
 		this.tieBreakStarted = tieBreakStarted;
 	}
 	
+	
+	/**
+	 * @return the winner
+	 */
+	public Player getWinner() {
+		return winner;
+	}
+	/**
+	 * @param winner the winner to set
+	 */
+	public void setWinner(Player winner) {
+		this.winner = winner;
+	}
 	@Override
 	public String toString() {
 		return String.format("Object Set Score: %d - %d", this.playerOnePoints, this.playerTwoPoints);
